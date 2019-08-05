@@ -1,0 +1,228 @@
+user collection
+
+fields
+id,
+pw,
+email,
+mymap,
+    mapno,
+followmap
+    mapno,
+
+
+// user data
+"yunki", "1111", "aaa@naver.com"
+"sangjun", "2222", "bbb@naver.com"
+"nang", "3333", "ccc@naver.com"
+"seungjun", "4444", "ddd@naver.com"
+"park", "5555", "eee@naver.com"
+
+
+db.user.insertOne({
+    id: "yunki",
+    pw: "1111",
+    email: "aaa@naver.com", 
+    mymap: {
+        mapno: [1, 2]
+    },
+    followmap: {
+        mapno: [3, 4]
+    }
+});
+
+db.user.insertOne({
+    id: "sangjun",
+    pw: "2222",
+    email: "bbb@naver.com"
+});
+
+db.user.insertOne({
+    id: "nang",
+    pw: "3333",
+    email: "ccc@naver.com", 
+    mymap : {
+        mapno: [3]
+    }
+});
+
+db.user.insertOne({
+    id: "seungjun",
+    pw: "4444",
+    email: "ddd@naver.com"
+});
+
+db.user.insertOne({
+    id: "park",
+    pw: "5555",
+    email: "eee@naver.com", 
+    mymap: {
+        mapno: [4]
+    }
+});
+
+db.user.updateOne(
+    { id:'sangjun' }, 
+    {
+        $push : { 
+            'followmap.mapno'  : { $each: [ 1 ] }
+            }
+    },
+    { upsert:true }
+);
+
+//////////////////////////////////////////////////
+
+udgmap collection
+
+mapno,
+id,
+region,
+mapname,
+center,
+zoom,
+visibility,
+cnt_follow,
+markers,
+    title,
+    lat,
+    lng,
+    desc,
+
+
+// map
+1, "yunki", "남부터미널", "테스트 지도", [127.016289, 37.484963]
+2, "yunki", "서초구", "엔코아", [127.010547, 37.491818]
+3, "nang", "공덕역", "맛집 지도", [126.951544, 37.543433]
+4, "park", "세종대", "힙스터 카페", [127.075966826421, 37.55167473692547]
+
+
+db.udgmap.insertOne({
+    mapno: 1,
+    id: "yunki", 
+    region: "남부터미널",
+    mapname: "테스트 지도",
+    center: [127.016289, 37.484963],
+    zoom: 18,
+    visibility: false, 
+    cnt_follow: 0, 
+    markers: [
+        { title: "1", lat: 37.48478, lng: 127.0160, desc: { content: "no.1" } },
+        { title: "2", lat: 37.48500, lng: 127.0163, desc: { content: "no.2" } },
+        { title: "3", lat: 37.48479, lng: 127.0166, desc: { content: "no.3" } }
+    ]
+});
+
+db.udgmap.insertOne({
+    mapno: 2,
+    id: "yunki", 
+    region: "서초구",
+    mapname: "엔코아",
+    center: [127.015655, 37.489887],
+    zoom: 15,
+    visibility: true, 
+    cnt_follow: 0, 
+    markers: [
+        { title: "1", lat: 37.490921, lng: 127.010564, desc: { content: "엔코아본사" } },
+        { title: "2", lat: 37.486627, lng: 127.020731, desc: { content: "플레이데이터" } }
+    ]
+});
+
+db.udgmap.insertOne({
+    mapno: 3,
+    id: "nang", 
+    region: "공덕역",
+    mapname: "맛집 지도",
+    center: [126.951544, 37.543433],
+    zoom: 17,
+    visibility: false, 
+    cnt_follow: 0, 
+    markers: [
+        { title: "1", lat: 37.541685, lng: 126.951306, desc: { content: "미분당" } },
+        { title: "2", lat: 37.541793, lng: 126.950690, desc: { content: "굴다리김치찌개" } }
+    ]
+});
+
+db.udgmap.insertOne({
+    mapno: 4,
+    id: "park", 
+    region: "세종대",
+    mapname: "힙스터 카페",
+    center: [127.075966826421, 37.55167473692547],
+    zoom: 15,
+    visibility: false, 
+    cnt_follow: 0, 
+    markers: [
+        { title: "1", lat: 37.5556, lng: 127.07186, desc: { content: "카페 쉼" } },
+        { title: "2", lat: 37.5543, lng: 127.07243, desc: { content: "En Blossom" } },
+        { title: "3", lat: 37.55395, lng: 127.07333, desc: { content: "Cafe Brick" } },
+        { title: "4", lat: 37.55412, lng: 127.07439, desc: { content: "그리네" } },
+        { title: "5", lat: 37.55491, lng: 127.07544, desc: { content: "187 Coffee" } },
+        { title: "6", lat: 37.55525, lng: 127.07695, desc: { content: "Little Talks Coffee" } },
+        { title: "7", lat: 37.55303, lng: 127.07224, desc: { content: "1월 14일" } },
+        { title: "8", lat: 37.55262, lng: 127.07159, desc: { content: "FMM Cafe" } },
+        { title: "9", lat: 37.55506, lng: 127.0786, desc: { content: "Cherry" } },
+        { title: "10", lat: 37.55701, lng: 127.0821, desc: { content: "RADIANT" } },
+        { title: "11", lat: 37.54843, lng: 127.07262, desc: { content: "롬곡" } },
+        { title: "12", lat: 37.54765, lng: 127.06895, desc: { content: "cafe 9u9u" } },
+        { title: "13", lat: 37.54685, lng: 127.07163, desc: { content: "Bellong Espresso" } },
+        { title: "14", lat: 37.54534, lng: 127.07612, desc: { content: "On The Volume" } },
+        { title: "15", lat: 37.5457, lng: 127.07702, desc: { content: "ONDO℃" } },
+        { title: "16", lat: 37.54521, lng: 127.07347, desc: { content: "Rainy Rain" } },
+        { title: "17", lat: 37.54574, lng: 127.073, desc: { content: "감성다방" } },
+        { title: "18", lat: 37.54775, lng: 127.06991, desc: { content: "그리네" } }
+    ]
+});
+
+db.udgmap.insertOne({
+    mapno: 5,
+    id: "park", 
+    region: "남부터미널",
+    mapname: "노래방",
+    center: [ 127.015756, 37.485959 ],
+    zoom: 16,
+    visibility: true, 
+    cnt_follow: 0, 
+    markers: [
+        { title: "1", lat: 37.48544, lng: 127.01732, desc: { content: "씨티 노래방" } },
+        { title: "2", lat: 37.48515, lng: 127.01856, desc: { content: "로얄 노래연습장" } },
+        { title: "3", lat: 37.48533, lng: 127.01882, desc: { content: "美 노래연습장" } },
+        { title: "4", lat: 37.48508, lng: 127.01582, desc: { content: "힐링 노래방" } },
+        { title: "5", lat: 37.48434, lng: 127.01444, desc: { content: "메아리 노래연습장" } },
+        { title: "6", lat: 37.48638, lng: 127.01462, desc: { content: "힐링 노래" } },
+        { title: "7", lat: 37.48608, lng: 127.01447, desc: { content: "샤르망 노래방" } },
+        { title: "8", lat: 37.48542, lng: 127.01418, desc: { content: "셰이브 노래방" } },
+        { title: "9", lat: 37.4858, lng: 127.01343, desc: { content: "플레이2라운드 노래방" } },
+        { title: "10", lat: 37.48411, lng: 127.01295, desc: { content: "알프스 노래방" } }
+    ]
+});
+
+
+db.udgmap.insertOne({
+    mapno: 6,
+    id: "park", 
+    region: "다낭",
+    mapname: "여행지도",
+    center: [  108.225110, 16.066335 ],
+    zoom: 14,
+    visibility: true, 
+    cnt_follow: 0, 
+    markers: [
+        { title: "1", lat: 16.05633, lng: 108.20255, desc: { content: "다낭 국제공항" } },
+        { title: "2", lat: 16.06674, lng: 108.21346, desc: { content: "빅씨 마트" } },
+        { title: "3", lat: 16.06771, lng: 108.21431, desc: { content: "꼰 시장" } },
+        { title: "4", lat: 16.06904, lng: 108.22487, desc: { content: "콩카페 1호점" } },
+        { title: "5", lat: 16.06825, lng: 108.22427, desc: { content: "한 시장" } },
+        { title: "6", lat: 16.06872, lng: 108.22291, desc: { content: "해피브레드" } },
+        { title: "7", lat: 16.06669, lng: 108.223, desc: { content: "핑크 성당" } },
+        { title: "8", lat: 16.0669, lng: 108.22475, desc: { content: "코바 쌀국수" } },
+        { title: "9", lat: 16.06114, lng: 108.22705, desc: { content: "용다리" } },
+        { title: "10", lat: 16.06082, lng: 108.22057, desc: { content: "더 컵스 커피" } },
+        { title: "11", lat: 16.06211, lng: 108.23131, desc: { content: "손트라 야시장" } },
+        { title: "12", lat: 16.06716, lng: 108.23418, desc: { content: "제레미 키친" } },
+        { title: "13", lat: 16.06583, lng: 108.24311, desc: { content: "논라 레스토랑" } },
+        { title: "14", lat: 16.06566, lng: 108.24604, desc: { content: "더 가든 레스토랑" } },
+        { title: "15", lat: 16.0639, lng: 108.24669, desc: { content: "미케 비치" } },
+        { title: "16", lat: 16.04787, lng: 108.2464, desc: { content: "탄탐 베이커리" } },
+        { title: "17", lat: 16.04192, lng: 108.24837, desc: { content: "냐벱 쌀국수" } }
+    ]
+});

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ko" ng-app="myApp">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>우리 동네 지도</title>
+
+    <!-- Bootsrap CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+    <!-- angular js -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+
+    <!-- css -->
+    <link href="css/mycss.css" rel="stylesheet">
+
+    <style>
+    #search-input::-webkit-input-placeholder {
+      text-align: center;
+    }
+    .modal {
+      text-align: center;
+    }
+    .modal-dialog {
+      display: inline-block;
+      text-align: left;
+      vertical-align: middle;
+      width: 90%;
+    }
+    @media screen and (min-width: 768px) {
+      .modal:before {
+        display: inline-block;
+        vertical-align: middle;
+        content: " ";
+        height: 100%;
+      }
+      .modal-dialog:before {
+        width: 40%;
+      }
+    }
+    </style>
+
+    <script>
+        function ReadCookie() {
+            var allcookies = document.cookie;
+            console.log("모든쿠키값 : " + allcookies);
+        }
+        function getCookie(name) {
+            var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+            return v ? v[2] : 'non-user';
+        }
+    </script>
+    <script>
+        var app = angular.module("myApp", []);
+        app.controller("myCtrl", function ($scope, $http) {
+            $scope.userForm = {};
+
+            sign()
+
+            $scope.signin = function () {
+            var signin_info = {
+                id: $("#form-id").val(),
+                pw: $("#form-pw").val()
+            }
+            $http({
+                method: 'POST',
+                url: '/signin.do',
+                timeout: 600000,
+                data: signin_info,
+            }).then(function successCallBack(response) {
+                ReadCookie();
+                sign()
+            }), function errorCallback(error) {
+            }
+            }
+
+            $scope.signout = function () {
+            // alert('signout')
+            var signout_info = {
+                id: getCookie('id'),
+                pw: getCookie('pw'),
+                email: getCookie('email')
+            }
+            $http({
+                method: 'POST',
+                url: '/signout.do',
+                timeout: 600000,
+                data: signout_info,
+            }).then(function successCallBack(response) {
+                ReadCookie();
+                sign();
+                window.location.href ="/";
+            }), function errorCallback(error) {
+            }
+            }
+
+            function sign() {
+            console.log("cookie id: " + getCookie('id'))
+            if (getCookie('id') != 'non-user') { // 로그인 된 상태일 경우
+                $('#signin-form').attr('class', 'btn p-0 dropdown');
+                $('#signin-form').attr('data-toggle', 'dropdown');
+                $('#signin-form').removeAttr('data-target');
+                $('#signin-form').attr('aria-expanded', 'true');
+            } else { // 로그인 안한 상태일 경우
+                $('#signin-form').attr('class', 'btn p-0');
+                $('#signin-form').attr('data-toggle', 'modal');
+                $('#signin-form').attr('data-target', '#signinModal');
+                $('#signin-form').removeAttr('aria-expanded');
+            }
+            }
+
+            $scope.addUser = function () {
+                if ( // 빈칸이 있는 지 검사 
+                    $scope.userForm.id == null ||
+                    $scope.userForm.pw == null ||
+                    $scope.userForm.pwcheck == null ||
+                    $scope.userForm.email == null
+                ){
+                    alert("빈칸을 채워주세요");
+                } else if (idFlag && emailFlag){ //중복확인을 모두 완료했는지 검사
+                    var newUser = {
+                        id: $scope.userForm.id,
+                        pw: $scope.userForm.pw,
+                        email: $scope.userForm.email
+                    };
+                    $http({
+                        method: 'POST', // HTTP 통신 방법
+                        url: "/signup.do", // 통신 할 URL
+                        timeout: 600000, // 1000 = 1초
+                        data: { // 보낼 데이터
+                            newUser: newUser
+                        },
+                    }).then(function successCallBack(response) {
+                        console.log("Success: add user");
+                        alert("회원가입에 성공했습니다");
+                        window.location.href = '/';
+                    }, function errorCallback(error) {
+                        console.log("Error" + error);
+                    });
+                } else {
+                    alert("중복확인을 해 주세요");
+                }
+            }
+        });
+    </script>
+    <!--for validation-->
+    <script>
+
+        // 정규식 
+        var re_idpw = /^[a-zA-Z0-9]{4,15}$/ // 아이디와 패스워드 검사 정규식
+        var re_email = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i; // 이메일 검사 정규식
+
+        // 정규식 검사 수행
+        function check(re, what) {
+            if (re.test(what.value)) {
+                return true;
+            }
+            return false;
+        }
+        // id, email 중복확인 버튼 중복 클릭 방지 함수
+        function doubleConfirmCheck(flag) { // 최초 1회 시만 confirm 함수 수행 
+            if (flag) { //flag가 true라면 이미 중복검사가 완료됨
+                alert('중복 확인이 된 id입니다.')
+                return flag;
+            } else { //false라면 중복확인을 아직 안했으므로 그냥 패스 
+                return false;
+            }
+        }
+
+        // id validation
+        var id_old = "";
+        var id_new = "";
+        var chkrs;
+        var idFlag = false; // false = 중복확인 하지 않은 상태 
+        function validateId() {
+            id_new = document.getElementById("id");
+            if (id_new.value == ""){
+                document.getElementById("id_valid_rs").innerHTML="";
+            } else { // id값이 비어있지 않을 때
+                if (id_old != id_new) { // id 입력 내용에 변화가 있다면
+                    //console.log(id_new.value);
+                    //중복 확인 여부를 false로 설정
+                    idFlag = false;
+                    // id양식 확인
+                    chkrs = check(re_idpw, id_new);
+                    if (!chkrs) { // id 양식이 맞지 않으면
+                        document.getElementById("id_valid_rs").innerHTML = "4~12자의 영문 대소문자와 숫자만 입력하세요"
+                    } else if (!idFlag) { // 적합한 아이디인데 중복확인 하지 않았다면
+                        document.getElementById("id-addon").disabled = false;
+                        document.getElementById("id_valid_rs").innerHTML = "중복확인을 해 주세요"
+                        return false;
+                    }
+                }
+            } // else end
+        }
+        //id 중복확인
+        function confirmId(){
+            if (doubleConfirmCheck(idFlag)){ // true일 시 수행하지 않음
+                return false;
+            } else { //false라면 수행한 후 idFlag에 true전달
+                //console.log('confirmid')
+                //console.log(id_new.value)
+                $.ajax({
+                    method: "POST",
+                    url: "/finduserid.do",
+                    data:{
+                        id: id_new.value
+                    },
+                    timeout: 600000
+                }).done(function(result){
+                    if(result=='notused'){
+                        document.getElementById("id_valid_rs").innerHTML="사용 가능한 아이디입니다";
+                        id_old = id_new.value;
+                        idFlag = true;
+                    } else{
+                        document.getElementById("id_valid_rs").innerHTML="이미 사용중인 아이디입니다";
+                        //idFlag = false;
+                    }
+                }).fail(function(err){
+                    console.error(err)
+                })
+            }
+        }
+
+        // pw validation
+        var pw="";
+        var pwcheck="";
+        function validatePw(){ // 최초 비밀번호 입력시 입력 형태 검사
+            pw = document.getElementById("pw");
+            //pw 양식 확인
+            chkrs = check(re_idpw, pw)
+            if(!chkrs) { //양식에 부합하지 않는다면 
+                document.getElementById("pw_valid_rs").innerHTML="4~15자의 영문 대소문자와 숫자만 입력하세요";
+                return false;
+            } else {
+                document.getElementById("pw_valid_rs").innerHTML="";
+                return false;
+            }
+        }
+        function verifyPw() { //동일한 비밀번호를 적었는지 확인 
+            pwcheck = document.getElementById("pwcheck");
+            if (pwcheck.value != "" && pw.value == pwcheck.value) { 
+                document.getElementById("pw_verify_rs").innerHTML="";
+                return false;
+            } else {
+                document.getElementById("pw_verify_rs").innerHTML='비밀번호가 맞지 않습니다';
+                return false;
+            }
+        }
+
+        //email validation
+        var email_old = "";
+        var email_new = "";
+        var emailFlag = false;
+        function validateEmail(){
+            email_new = document.getElementById("email");
+            if (email_new.value==""){
+                document.getElementById("email_valid_rs").innerHTML="";
+            } else { // email값이 비어있지 않을 때
+                if (email_old != email_new) { // email 입력 내용에 변화가 있다면
+                    //중복 확인 여부를 false로 설정
+                    emailFlag = false;
+                    // id양식 확인
+                    chkrs = check(re_email, email_new);
+                    if (!chkrs) { // id 양식이 맞지 않으면
+                        email_new =""; // 양식이 맞지 않은 상태의 중복 확인 방지 
+                        document.getElementById("email_valid_rs").innerHTML = "다음과 같이 작성해주세요 ex) hi@udg.com";
+                    } else if (!emailFlag) { // 적합한 아이디인데 중복확인 하지 않았다면
+                        document.getElementById("email-addon").disabled = false;
+                        document.getElementById("email_valid_rs").innerHTML = "중복확인을 해 주세요";
+                        return false;
+                    }
+                }
+            } // else end
+        }
+        
+        //email 중복확인
+        function confirmEmail(){
+            if (doubleConfirmCheck(emailFlag)){ // true일 시 수행하지 않음
+                return false;
+            } else if (email_new.value!="") { //false라면 수행한 후 idFlag에 true전달
+                //console.log('confirmEmail')
+                //console.log(email_new.value)
+                $.ajax({
+                    method: "POST",
+                    url: "/finduseremail.do",
+                    data:{
+                        email: email_new.value
+                    },
+                    timeout: 600000
+                }).done(function(result){
+                    if(result=='notused'){
+                        document.getElementById("email_valid_rs").innerHTML="사용 가능한 이메일입니다";
+                        email_old = email_new.value;
+                        emailFlag = true;
+                    } else{
+                        document.getElementById("email_valid_rs").innerHTML="이미 사용중인 이메일입니다";
+                    }
+                }).fail(function(err){
+                    console.error(err)
+                })
+            } else {
+                document.getElementById("email_valid_rs").innerHTML = "다음과 같이 작성해주세요 ex) hi@udg.com";
+            }
+        }
+    </script>
+</head>
+
+<body ng-controller="myCtrl">
+    
+    <div class="container-fluid p-0 m-0">
+        <!-- header -->
+        <div class="row d-flex justify-content-center py-3 m-0 border-bottom">
+            <!-- home -->
+            <div class="col-1 d-flex justify-content-end align-items-center">
+            <a class="btn p-0" href="/mainpage.go">
+                <i class="fas fa-home fa-lg" style="color: #555;"></i>
+            </a>
+            </div>
+    
+            <!-- search -->
+            <div class="col-3 p-0">
+            <div class="form-group d-flex align-items-center m-0">
+                <span class="input-group-addon fas fa-search fa-sm"
+                style="color:grey; position: relative; left:15px; z-index:1;">
+                </span>
+                <input type="text" class="form-control" id="search-input" placeholder="검색" aria-label="Search"
+                spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false"
+                aria-owns="algolia-autocomplete-listbox-0" dir="auto" value=""
+                style="position: relative; right:7px; padding:3px 10px 3px 26px;">
+            </div>
+            </div>
+    
+            <!-- user -->
+            <div class="col-1 d-flex justify-content-start align-items-center">
+            <!-- signin -->
+            <a id="signin-form" class="btn p-0" href="#" data-toggle="modal" data-target="#signinModal">
+                <i class="fas fa-user-alt fa-lg" style="color: #555;"></i>
+            </a>
+            <ul class="dropdown-menu">
+                <li class="px-3">
+                <a href="/usermod.go">회원정보 수정</a>
+                </li>
+                <li class="px-3">
+                <a href="/" ng-click="signout()">로그아웃</a>
+                </li>
+            </ul>
+            </div>
+        </div>
+        </div>
+    
+    
+        <div class="container-fluid h-100 p-0 m-0 bg-light">
+        <!-- menu -->
+        <div class="row d-flex justify-content-center py-3 m-0">
+            <div class="col-sm-6">
+                <ul class="nav nav-justified">
+                    <li class="nav-item"><div id="Gotomain" class="text-black-50"><a href= "">전체 지도</a></div></li>
+                    <li class="nav-item"><div id="Gotomymap" class="text-black-50"><a href= "">나만의 지도</a></div></li>
+                    <li class="nav-item"><div id="Gotomyfollowmap" class="text-black-50"><a href= "">팔로우</a></div></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container-fluid h-100 p-0 m-0 bg-light">
+        <!-- test -->
+        <div class="row d-flex justify-content-center m-0">
+            <div class="col-lg-10 mx-4">
+                <div class="row d-flex justify-content-center">
+                회원가입
+                </div>
+                <div class="row d-flex justify-content-center">
+                    <div class="col-6">
+                        <form class="form-group">
+
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" placeholder="아이디" name="id" id="id" ng-model="userForm.id" onkeyup="validateId()" ng-required="true" />
+                                <div class="input-group-append">
+                                    <button class="btn text-white" type="button" id="id-addon" style="background-color: #adb5bd;" disabled= "true" onclick="confirmId()">
+                                            중복확인
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="id_valid_rs" class="mb-2"></div>
+
+                            <input type="password" class="form-control mb-2" placeholder="비밀번호" name="pw" id ="pw" ng-model="userForm.pw" onkeyup="validatePw()" ng-required="true" />
+                            <div id="pw_valid_rs" class="mb-2"></div>
+
+                            <input type="password" class="form-control mb-2" name="pwcheck" id="pwcheck" ng-model="userForm.pwcheck" placeholder="비밀번호 확인" onkeyup="verifyPw()" ng-required="true" />
+                            <div id="pw_verify_rs" class="mb-2"></div>
+
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" placeholder="이메일" name="email" id ="email" ng-model="userForm.email"  onkeyup="validateEmail()" ng-required="true" />
+                                <div class="input-group-append">
+                                    <button class="btn text-white" type="button" id="email-addon" style="background-color: #adb5bd;" disabled="true" onclick="confirmEmail()">
+                                            중복확인
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="email_valid_rs" class="mb-2"></div>
+
+                            <button class="btn btn-primary btn-block form-control" ng-click="addUser()">회원가입</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- modal -->
+    <div class="modal fade" id="signinModal" tabindex="-1" role="dialog" aria-labelledby="signinModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <!-- modal header -->
+                <div class="modal-header border-bottom-0 pb-0">
+                    <div class="container-fluid">
+                        <div class="row d-flex justify-content-center">
+                            <h5 class="modal-title" id="signinModalLabel">우리 동네 지도</h5>
+                        </div>
+                        <div class="row d-flex justify-content-center">
+                            로그인
+                        </div>
+                    </div>
+                    <!-- close button -->
+                    <!-- <button type="button" class="close pl-0" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button> -->
+                </div>
+    
+                <!-- modal body -->
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="sr-only" for="form-username">id</label>
+                        <input type="text" name="form-username" placeholder="아이디" class="form-control bg-light border-0"
+                            id="form-id">
+                    </div>
+                    <div class="form-group m-0">
+                        <label class="sr-only" for="form-password">pw</label>
+                        <input type="password" name="form-password" placeholder="패스워드"
+                            class="form-control bg-light border-0" id="form-pw">
+                    </div>
+                </div>
+    
+                <!-- modal footer -->
+                <div class="modal-footer border-top-0 pt-0">
+                    <div class="container-fluid">
+                        <div class="row d-flex justify-content-center pb-3">
+                            <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal"
+                                ng-click="signin()">로그인</button>
+                        </div>
+                        <div class="row d-flex justify-content-center">
+                            <a href="#">아이디</a>&nbsp;<a href="#">비밀번호</a>&nbsp;찾기<br>
+                        </div>
+                        <div class="row d-flex justify-content-center">
+                            계정이 없으신가요?&nbsp;<a href="/signup.go">회원가입</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- footer -->
+    <footer>
+        <div class="container-fluid bg-light">
+            <div class="row d-flex justify-content-center py-2 m-0">
+                <p>&copy; 2019 UDG</p>
+            </div>
+        </div>
+    </footer>
+    <script>
+        var id = getCookie('id');
+        $("#Gotomain").click(function () {
+          window.location.href = '/';
+        });
+        $('#Gotomymap').click(function () {
+          if (id != "non-user") {
+            window.location.href = '/mymap.go';
+          } else {
+            alert('로그인이 필요한 서비스입니다');
+          }
+        });
+        $('#Gotomyfollowmap').click(function () {
+          if (id != "non-user") {
+            window.location.href = '/myfollowmap.go';
+          } else {
+            alert('로그인이 필요한 서비스입니다');
+          }
+        });
+    </script>
+</body>
+
+</html>
